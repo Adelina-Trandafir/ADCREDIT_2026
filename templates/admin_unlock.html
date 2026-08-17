@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔓 Admin - Deblocare Conturi</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin_unlock.css') }}?v={{ cache_buster }}">
+</head>
+<body>
+    <!-- Header -->
+    <header class="unlock-header">
+        <div class="header-content">
+            <div class="header-left">
+                <a href="/admin/dashboard" class="back-btn">
+                    <span class="back-icon">←</span>
+                    <span class="back-text">Dashboard</span>
+                </a>
+                <h1 class="page-title">
+                    <span class="title-icon">🔓</span>
+                    Deblocare Conturi
+                </h1>
+            </div>
+            <div class="header-right">
+                <div class="admin-info">
+                    <span class="admin-label">Admin:</span>
+                    <span class="admin-name" id="adminName">Încărcare...</span>
+                </div>
+                <button class="refresh-btn" onclick="refreshAll()" title="Refresh All">
+                    <span id="refreshIcon">🔄</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="unlock-main">
+        <!-- Quick Actions -->
+        <section class="quick-actions">
+            <div class="action-card emergency-card">
+                <div class="card-header">
+                    <span class="card-icon">🚨</span>
+                    <h3>Deblocare Urgență</h3>
+                </div>
+                <div class="card-content">
+                    <p>Deblochează toate conturile blocate simultan</p>
+                    <div class="emergency-buttons">
+                        <button class="emergency-btn users-btn" onclick="emergencyUnlock('user')">
+                            <span>👥</span> Utilizatori
+                        </button>
+                        <button class="emergency-btn admin-btn" onclick="emergencyUnlock('admin')">
+                            <span>🛡️</span> Admin
+                        </button>
+                        <button class="emergency-btn all-btn" onclick="emergencyUnlock('all')">
+                            <span>🌍</span> Toate
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="action-card manual-card">
+                <div class="card-header">
+                    <span class="card-icon">✏️</span>
+                    <h3>Deblocare Manuală</h3>
+                </div>
+                <div class="card-content">
+                    <p>Deblocare specifică prin email</p>
+                    <div class="manual-form">
+                        <input type="email" id="manualEmail" placeholder="email@domain.com" class="manual-input">
+                        <select id="manualType" class="manual-select">
+                            <option value="user">Utilizator</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                        <button class="manual-btn" onclick="manualUnlock()">
+                            <span>🔓</span> Deblocare
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Stats Overview -->
+        <section class="stats-overview">
+            <div class="stat-item">
+                <div class="stat-icon">🚫</div>
+                <div class="stat-info">
+                    <div class="stat-label">Conturi Blocate</div>
+                    <div class="stat-value" id="totalBlocked">-</div>
+                </div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-icon">👥</div>
+                <div class="stat-info">
+                    <div class="stat-label">Utilizatori</div>
+                    <div class="stat-value" id="usersBlocked">-</div>
+                </div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-icon">🛡️</div>
+                <div class="stat-info">
+                    <div class="stat-label">Admin</div>
+                    <div class="stat-value" id="adminBlocked">-</div>
+                </div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-icon">⚠️</div>
+                <div class="stat-info">
+                    <div class="stat-label">Avertizări</div>
+                    <div class="stat-value" id="warningsCount">-</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Filters -->
+        <section class="filters-section">
+            <div class="filters-header">
+                <h2>
+                    <span class="section-icon">🔍</span>
+                    Filtare și Căutare
+                </h2>
+                <button class="clear-filters-btn" onclick="clearFilters()">
+                    <span>🗑️</span> Șterge Filtre
+                </button>
+            </div>
+            <div class="filters-grid">
+                <div class="filter-group">
+                    <label class="filter-label">Tip Cont:</label>
+                    <select id="typeFilter" class="filter-select" onchange="applyFilters()">
+                        <option value="">Toate</option>
+                        <option value="user">Utilizatori</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Status:</label>
+                    <select id="statusFilter" class="filter-select" onchange="applyFilters()">
+                        <option value="">Toate</option>
+                        <option value="blocked">Blocate</option>
+                        <option value="warning">Avertizări</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Căutare Email:</label>
+                    <input type="text" id="searchEmail" placeholder="Caută email..." class="filter-input" oninput="applyFilters()">
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Sortare:</label>
+                    <select id="sortBy" class="filter-select" onchange="applyFilters()">
+                        <option value="email">Email</option>
+                        <option value="time">Timp rămas</option>
+                        <option value="type">Tip</option>
+                        <option value="status">Status</option>
+                    </select>
+                </div>
+            </div>
+        </section>
+
+        <!-- Accounts List -->
+        <section class="accounts-section">
+            <div class="accounts-header">
+                <h2>
+                    <span class="section-icon">📋</span>
+                    Listă Conturi
+                    <span class="accounts-count" id="accountsCount">(0)</span>
+                </h2>
+                <div class="bulk-actions">
+                    <button class="bulk-btn" onclick="selectAll()">
+                        <span>☑️</span> Selectează Toate
+                    </button>
+                    <button class="bulk-btn" onclick="deselectAll()">
+                        <span>⬜</span> Deselectează
+                    </button>
+                    <button class="bulk-btn unlock-selected-btn" onclick="unlockSelected()" disabled>
+                        <span>🔓</span> Deblocare Selectate
+                    </button>
+                </div>
+            </div>
+            
+            <div class="accounts-container">
+                <div id="accountsList" class="accounts-list">
+                    <div class="loading-state">
+                        <span class="loading-spinner">⏳</span>
+                        <span>Încărcare conturi...</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Activity Log -->
+        <section class="activity-section">
+            <div class="activity-header">
+                <h2>
+                    <span class="section-icon">📜</span>
+                    Jurnal Activitate
+                </h2>
+                <button class="clear-log-btn" onclick="clearActivityLog()">
+                    <span>🗑️</span> Șterge Jurnal
+                </button>
+            </div>
+            <div class="activity-container">
+                <div id="activityLog" class="activity-log">
+                    <div class="activity-item">
+                        <span class="activity-time">Gata pentru utilizare</span>
+                        <span class="activity-message">Sistem de deblocare inițializat</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modals -->
+    <div id="confirmModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="confirmTitle">Confirmare</h3>
+                <button class="modal-close" onclick="closeConfirmModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <p id="confirmMessage">Mesaj confirmare</p>
+                <div class="confirm-details" id="confirmDetails"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="cancel-btn" onclick="closeConfirmModal()">
+                    <span>❌</span> Anulare
+                </button>
+                <button class="confirm-btn" id="confirmButton" onclick="executeConfirm()">
+                    <span>✅</span> Confirmare
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-content">
+            <div class="loading-spinner-big">⏳</div>
+            <div class="loading-text">Se procesează...</div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/admin/admin-unlock.js') }}?v={{ cache_buster }}"></script>
+    <script src="{{ url_for('static', filename='js/admin/admin-session.js') }}?v={{ cache_buster }}"></script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3:*)",
+      "mcp__ide__getDiagnostics",
+      "Bash(ollama list:*)",
+      "Bash(ls:*)",
+      "Bash(grep -n \"Consultanti\\\\`\" /root/ADCREDIT3/SQL_DEMO/SVN_IM_struct.sql)",
+      "Bash(grep:*)",
+      "Bash(find /root/ADCREDIT3 -type f -name *.py -exec grep -l \"langchain\\\\|pytorch\\\\|onnx\" {})",
+      "Bash(2)",
+      "Bash(python:*)",
+      "Bash(pkill -f \"python.*app.py\")",
+      "Bash(find /root/ADCREDIT3/static -name *.js -path *calendar* -o -path *treeview* -o -path *combobox*)",
+      "Bash(head -10 grep -n \"^export\\\\|^class\\\\|^const.*=.*class\\\\|module.exports\" /root/ADCREDIT3/static/js/components/calendar/calendar-manager.js)",
+      "Bash(head -10 grep -n \"^export\\\\|^class\\\\|^const.*=.*class\\\\|module.exports\" /root/ADCREDIT3/static/js/components/treeview/treeview.js)",
+      "Read(//tmp/**)",
+      "Bash(head -20 grep -n \"createElements\\\\|this\\\\.input\\\\b\\\\|click.*show\\\\|show\\(\\)\\\\|open\\(\\)\" /root/ADCREDIT3/static/js/components/treeview/treeview-ui.js)"
+    ]
+  }
+}

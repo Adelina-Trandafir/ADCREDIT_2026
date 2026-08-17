@@ -1,0 +1,146 @@
+<div id="detailsPanelBaza" class="details-panel-baza hidden">
+  <div id="detailsPanelBazaHeader" class="details-panel-baza-header">
+    <span class="details-panel-baza-title">Detalii Client</span>
+    <button id="toggleDetailsPanel" class="details-panel-baza-toggle">▼</button>
+  </div>
+
+  <div id="detailsPanelBazaForm" class="details-panel-baza-content">
+    <div id="detailsPanelBazaLeft" class="details-panel-baza-left">
+      <form id="details-panel-baza-detailsForm" class="details-panel-baza-form">
+        <div id="g_NumeClient" class="details-panel-baza-form-group">
+          <label for="NumeClient" class="details-panel-baza-form-label">Nume:</label>
+          <input
+            type="text"
+            id="NumeClient"
+            name="NumeClient"
+            class="form-control details-panel-baza-form-control"
+          />
+        </div>
+        <div id="g_CNPClient" class="details-panel-baza-form-group">
+          <label for="CNPClient" class="details-panel-baza-form-label">CNP:</label>
+          <input
+            type="text"
+            id="CNPClient"
+            name="CNPClient"
+            class="form-control details-panel-baza-form-control"
+          />
+        </div>
+        <div id="g_TelefonClient" class="details-panel-baza-form-group">
+          <label for="TelefonClient" class="details-panel-baza-form-label">Telefon:</label>
+          <input
+            type="phone"
+            id="TelefonClient"
+            name="TelefonClient"
+            class="form-control details-panel-baza-form-control"
+          />
+        </div>
+        <div id="g_EmailClient" class="details-panel-baza-form-group">
+          <label for="EmailClient" class="details-panel-baza-form-label">Email:</label>
+          <input
+            type="email"
+            id="EmailClient"
+            name="EmailClient"
+            class="form-control details-panel-baza-form-control"
+          />
+        </div>
+        <div id="g_JudetClient" class="details-panel-baza-form-group">
+          <label for="JudetClient" class="details-panel-baza-form-label">Județ:</label>
+          <div id="div_JudetClient" class="details-panel-baza-form-control-combo"></div>
+        </div>
+        <div id="g_DataPrimire" class="details-panel-baza-form-group">
+          <label for="DataPrimire" class="details-panel-baza-form-label">Data:</label>
+          <input
+            type="text"
+            id="DataPrimire"
+            name="DataPrimire"
+            class="form-control details-panel-baza-form-control"
+            data-custom-datetime="true"
+          />
+        </div>
+        <div id="g_NumeConsultant" class="details-panel-baza-form-group">
+          <label for="NumeConsultant" class="details-panel-baza-form-label">Consultant SVN:</label>
+          <div id="div_NumeConsultant" class="details-panel-baza-form-control-combo"></div>
+        </div>
+        <div id="g_SursaAgent" class="details-panel-baza-form-group">
+          <label for="SursaAgent" class="details-panel-baza-form-label">Sursă / Agent:</label>
+          <div id="div_SursaAgent" class="details-panel-baza-form-control-combo"></div>
+        </div>
+        <div id="g_aTelefon" class="details-panel-baza-form-group">
+          <label for="aTelefon" class="details-panel-baza-form-label">Tel Agent:</label>
+          <input
+            type="text"
+            id="aTelefon"
+            name="aTelefon"
+            class="details-panel-baza-form-control disabled"
+          />
+        </div>
+        <div id="g_aMail" class="details-panel-baza-form-group">
+          <label for="aMail" class="details-panel-baza-form-label">Email Agent:</label>
+          <input
+            type="email"
+            id="aMail"
+            name="aMail"
+            class="details-panel-baza-form-control disabled"
+          />
+        </div>
+      </form>
+    </div>
+
+    <div id="detailsPanelBazaMiddle" class="details-panel-baza-middle">
+      <div id="feedbackTableContainer" class="details-panel-baza-feedback-table-container">
+        <div id="feedbackTableWrapper" class="details-panel-baza-feedback-table-wrapper">
+          <table id="feedbackTable" class="details-panel-baza-feedback-table">
+            <thead>
+              <tr>
+                <th
+                  class="details-panel-baza-feedback-table-header"
+                  style="width: 15%; min-width: 100px; text-align: center"
+                >
+                  Data Conectare
+                </th>
+                <th
+                  class="details-panel-baza-feedback-table-header"
+                  style="width: 70%; text-align: center"
+                >
+                  Feedback
+                </th>
+                <th
+                  class="details-panel-baza-feedback-table-header"
+                  style="width: 15%; min-width: 100px; text-align: center"
+                >
+                  Dată Reconectare
+                </th>
+              </tr>
+            </thead>
+            <tbody id="feedbackTableBody">
+              <tr>
+                <td colspan="3" class="loading">Se încarcă...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div id="feedbackTableFooter" class="details-panel-baza-feedback-table-footer">
+          <button id="addFeedbackBtn" class="btn btn-add-feedback">
+            <span class="btn-icon-span">➕</span>
+            <span class="btn-text-span">Adaugă Feedback</span>
+          </button>
+          <button id="sendMailBtn" class="btn btn-send-mail">
+            <span class="btn-text-span">Trimite Email</span>
+            <span class="btn-icon-span">📧</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="detailsPanelBazaBottom" class="details-panel-baza-bottom">
+    <button id="detailsPanelBazaCancelBtn" class="btn btn-secondary">
+      <span class="btn-icon-span">❌</span>
+      <span class="btn-text-span">Renunță</span>
+    </button>
+    <button id="detailsPanelBazaSaveBtn" class="btn btn-primary">
+      <span class="btn-text-span">Salvează</span>
+      <span class="btn-icon-span">💾</span>
+    </button>
+  </div>
+</div>

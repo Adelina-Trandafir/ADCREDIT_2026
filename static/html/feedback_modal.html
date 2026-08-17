@@ -1,0 +1,112 @@
+<div id="" class="feedback-modal-header">
+  <h2>💬 Adăugare Feedback</h2>
+  <button class="feedback-modal-close" id="feedback-close-btn">✕</button>
+</div>
+
+<!-- Banner pentru spell checker -->
+<div id="spell-check-banner" class="spell-check-banner" style="display: none">
+  <div class="spell-check-banner-content">
+    <span class="spell-check-icon">ℹ️</span>
+    <div class="spell-check-text">
+      <strong>Pentru verificare ortografică automată în română:</strong>
+      <div class="spell-check-instructions">
+        <div>Chrome/Edge: Settings → Languages → Add Romanian</div>
+        <div>Firefox: Options → Language → Add Romanian</div>
+      </div>
+    </div>
+    <button class="spell-check-dismiss" id="dismiss-spell-banner">✕</button>
+  </div>
+</div>
+
+<div class="feedback-modal-body">
+  <!-- Status Combobox (SCHIMBAT din <select>) -->
+  <div class="feedback-upper-controls">
+    <div class="feedback-form-group">
+      <div id="feedback-status-container"></div>
+    </div>
+
+    <!-- Data Recontactare (ascuns inițial) -->
+    <div id="g_DataRecontactare" class="feedback-form-group">
+      <label for="DataRecontactare">Data Recontactare *</label>
+      <input
+        type="text"
+        id="DataRecontactare"
+        name="DataRecontactare"
+        class="feedback-date-input"
+        data-custom-datetime="true"
+      />
+    </div>
+  </div>
+
+  <!-- Feedback Text Editor -->
+  <div id="feedback-editor-container" class="feedback-form-group">
+    <label for="feedback-editor">Feedback *</label>
+    <div id="feedback-toolbar" class="feedback-toolbar">
+      <button
+        id="feedback-bold-btn"
+        type="button"
+        class="feedback-toolbar-btn"
+        data-command="bold"
+        title="Bold (Ctrl+B)"
+      >
+        <strong>B</strong>
+      </button>
+      <button
+        id="feedback-italic-btn"
+        type="button"
+        class="feedback-toolbar-btn"
+        data-command="italic"
+        title="Italic (Ctrl+I)"
+      >
+        <em>I</em>
+      </button>
+      <button
+        id="feedback-underline-btn"
+        type="button"
+        class="feedback-toolbar-btn"
+        data-command="underline"
+        title="Underline (Ctrl+U)"
+      >
+        <u>U</u>
+      </button>
+      <span class="feedback-toolbar-separator"></span>
+      <input
+        type="color"
+        id="feedback-color-picker"
+        class="feedback-color-picker"
+        value="#000000"
+        title="Culoare text"
+      />
+      <span class="feedback-toolbar-separator"></span>
+      <button
+        id="feedback-ordered-list-btn"
+        type="button"
+        class="feedback-toolbar-btn"
+        data-command="insertUnorderedList"
+        title="Listă cu puncte"
+      >
+        ⚫
+      </button>
+    </div>
+    <div
+      id="feedback-editor"
+      class="feedback-editor"
+      contenteditable="true"
+      spellcheck="true"
+      lang="ro"
+      data-placeholder="Introdu feedback-ul aici (minim 10 caractere)..."
+    ></div>
+    <div class="feedback-char-count">
+      <span id="feedback-char-counter">0</span> / 10 caractere minime
+    </div>
+  </div>
+</div>
+
+<div class="feedback-modal-footer">
+  <button class="btn btn-secondary" id="feedback-cancel-btn">
+    <span class="btn-icon-span">❌</span><span class="btn-text-span"> Anulează</span>
+  </button>
+  <button class="btn btn-primary" id="feedback-save-btn" disabled>
+    <span class="btn-icon-span">✅</span><span class="btn-text-span"> Salvează</span>
+  </button>
+</div>

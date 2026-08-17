@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Statistici Business - AD.CREDIT 3</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/variables.css') }}?v={{ cache_buster }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin_dashboard.css') }}?v={{ cache_buster }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin_stats.css') }}?v={{ cache_buster }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/calendar.css') }}?v={{ cache_buster }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/treeview/treeview.css') }}?v={{ cache_buster }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/global.css') }}?v={{ cache_buster }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/overlay_manager.css') }}?v={{ cache_buster }}">
+    <script src="{{ url_for('static', filename='js/utils/css.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/utils/z-max.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <!-- Header -->
+    <header class="admin-header">
+        <div class="header-content">
+            <div class="header-left">
+                <h1 class="dashboard-title">
+                    <span class="title-icon">&#128202;</span>
+                    Statistici Business
+                </h1>
+                <span class="admin-welcome">Bun venit, <strong id="adminName">Administrator</strong></span>
+            </div>
+            <div class="header-right">
+                <button class="header-btn" onclick="reloadAll()" title="Refresh date">
+                    <span id="refreshIcon">&#128260;</span>
+                </button>
+                <button class="header-btn" onclick="toggleTheme()" title="Toggle Dark Mode">
+                    <span id="themeIcon">&#127769;</span>
+                </button>
+                <a href="/admin/dashboard" class="header-btn" title="Dashboard" style="text-decoration:none;">
+                    &#127968;
+                </a>
+                <a href="/admin/logout" class="logout-btn">
+                    <span>&#128682;</span> Logout
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="stats-main">
+
+        <!-- Controls bar -->
+        <div class="controls-bar">
+            <div class="db-selector-wrap">
+                <label for="dbSelector" class="db-label">Departament:</label>
+                <select id="dbSelector" class="db-selector">
+                    <option value="SVN_IM">SVN IM &mdash; Ipotecare</option>
+                    <option value="SVN_NP">SVN NP &mdash; Nevoi Personale</option>
+                    <option value="SVN_AS">SVN AS &mdash; Asigurari</option>
+                </select>
+            </div>
+            <div class="tab-nav">
+                <button class="tab-btn active" data-tab="leads">Leads</button>
+                <button class="tab-btn" data-tab="dosare">Dosare</button>
+                <button class="tab-btn" data-tab="consultanti">Consultanti</button>
+                <button class="tab-btn" data-tab="tendinte">Tendinte</button>
+                <button class="tab-btn" data-tab="analiza-ai">&#129302; Analiz&#259; AI</button>
+            </div>
+        </div>
+
+        <!-- KPI Cards -->
+        <section class="kpi-section">
+            <div class="kpi-grid" id="kpiGrid">
+                <div class="kpi-card kpi-blue">
+                    <div class="kpi-icon">&#128101;</div>
+                    <div class="kpi-body">
+                        <div class="kpi-label">Total Leads</div>
+                        <div class="kpi-value" id="kpi-total-leads"><span class="kpi-spinner"></span></div>
+                    </div>
+                </div>
+                <div class="kpi-card kpi-green">
+                    <div class="kpi-icon">&#10024;</div>
+                    <div class="kpi-body">
+                        <div class="kpi-label">Leads Noi</div>
+                        <div class="kpi-value" id="kpi-leads-noi"><span class="kpi-spinner"></span></div>
+                    </div>
+                </div>
+                <div class="kpi-card kpi-cyan">
+                    <div class="kpi-icon">&#128197;</div>
+                    <div class="kpi-body">
+                        <div class="kpi-label">Leads Azi</div>
+                        <div class="kpi-value" id="kpi-leads-azi"><span class="kpi-spinner"></span></div>
+                    </div>
+                </div>
+                <div class="kpi-card kpi-indigo">
+                    <div class="kpi-icon">&#128336;</div>
+                    <div class="kpi-body">
+                        <div class="kpi-label">Leads 30 Zile</div>
+                        <div class="kpi-value" id="kpi-leads-30zile"><span class="kpi-spinner"></span></div>
+                    </div>
+                </div>
+                <div class="kpi-card kpi-purple">
+                    <div class="kpi-icon">&#128196;</div>
+                    <div class="kpi-body">
+                        <div class="kpi-label">Total Dosare</div>
+                        <div class="kpi-value" id="kpi-total-dosare"><span class="kpi-spinner"></span></div>
+                    </div>
+                </div>
+                <div class="kpi-card kpi-emerald">
+                    <div class="kpi-icon">&#9989;</div>
+                    <div class="kpi-body">
+                        <div class="kpi-label">Dosare Debursate</div>
+                        <div class="kpi-value" id="kpi-dosare-debursate"><span class="kpi-spinner"></span></div>
+                    </div>
+                </div>
+                <div class="kpi-card kpi-red">
+                    <div class="kpi-icon">&#10060;</div>
+                    <div class="kpi-body">
+                        <div class="kpi-label">Dosare Respinse</div>
+                        <div class="kpi-value" id="kpi-dosare-respinse"><span class="kpi-spinner"></span></div>
+                    </div>
+                </div>
+                <div class="kpi-card kpi-orange">
+                    <div class="kpi-icon">&#128106;</div>
+                    <div class="kpi-body">
+                        <div class="kpi-label">Total Clienti</div>
+                        <div class="kpi-value" id="kpi-total-clienti"><span class="kpi-spinner"></span></div>
+                    </div>
+                </div>
+                <div class="kpi-card kpi-teal">
+                    <div class="kpi-icon">&#128176;</div>
+                    <div class="kpi-body">
+                        <div class="kpi-label">Valoare Totala (RON)</div>
+                        <div class="kpi-value kpi-value-sm" id="kpi-valoare-totala"><span class="kpi-spinner"></span></div>
+                    </div>
+                </div>
+                <div class="kpi-card kpi-lime">
+                    <div class="kpi-icon">&#128185;</div>
+                    <div class="kpi-body">
+                        <div class="kpi-label">Valoare Debursata (RON)</div>
+                        <div class="kpi-value kpi-value-sm" id="kpi-valoare-debursata"><span class="kpi-spinner"></span></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tab: Leads -->
+        <section class="tab-content active" id="tab-leads">
+            <div class="charts-row">
+                <div class="chart-card chart-card-half">
+                    <div class="chart-card-header">
+                        <span class="chart-title">Leads per Sursa</span>
+                        <span class="chart-subtitle" id="leadsSursaSubtitle"></span>
+                    </div>
+                    <div class="chart-body">
+                        <div class="chart-wrap chart-wrap-doughnut">
+                            <canvas id="chartLeadsSursa"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="chart-card chart-card-half">
+                    <div class="chart-card-header">
+                        <span class="chart-title">Feedback per Status</span>
+                    </div>
+                    <div class="chart-body">
+                        <div class="chart-wrap chart-wrap-doughnut">
+                            <canvas id="chartFeedbackStatus"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="table-card">
+                <div class="table-card-header">
+                    <span class="chart-title">Surse Leads &mdash; Detaliu</span>
+                </div>
+                <div class="table-wrap">
+                    <table class="stats-table" id="tableLeadsSursa">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Sursa</th>
+                                <th>Nr. Leads</th>
+                                <th>Procent</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbodyLeadsSursa">
+                            <tr><td colspan="4" class="table-loading">Se incarca...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tab: Dosare -->
+        <section class="tab-content" id="tab-dosare">
+            <div class="charts-row">
+                <div class="chart-card chart-card-half">
+                    <div class="chart-card-header">
+                        <span class="chart-title">Dosare per Status</span>
+                    </div>
+                    <div class="chart-body">
+                        <div class="chart-wrap chart-wrap-bar">
+                            <canvas id="chartDosareStatus"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="chart-card chart-card-half">
+                    <div class="chart-card-header">
+                        <span class="chart-title">Dosare per Banca (Top 15)</span>
+                    </div>
+                    <div class="chart-body">
+                        <div class="chart-wrap chart-wrap-bar">
+                            <canvas id="chartDosareBanca"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="table-card">
+                <div class="table-card-header">
+                    <span class="chart-title">Dosare per Banca &mdash; Detaliu</span>
+                </div>
+                <div class="table-wrap">
+                    <table class="stats-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Banca</th>
+                                <th>Nr. Dosare</th>
+                                <th>Valoare RON</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbodyDosareBanca">
+                            <tr><td colspan="4" class="table-loading">Se incarca...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tab: Consultanti -->
+        <section class="tab-content" id="tab-consultanti">
+            <div class="table-card">
+                <div class="table-card-header">
+                    <span class="chart-title">Top Consultanti &mdash; Performanta Dosare</span>
+                    <div class="table-sort-hint">Click pe header pentru sortare</div>
+                </div>
+                <div class="table-wrap">
+                    <table class="stats-table sortable-table" id="tableConsultanti">
+                        <thead>
+                            <tr>
+                                <th data-col="idx">#</th>
+                                <th data-col="NumeConsultant" class="sortable">Consultant</th>
+                                <th data-col="dosare" class="sortable sort-active sort-desc">Dosare</th>
+                                <th data-col="valoare" class="sortable">Valoare RON</th>
+                                <th data-col="debursate" class="sortable">Debursate</th>
+                                <th data-col="respinse" class="sortable">Respinse</th>
+                                <th data-col="rata" class="sortable">Rata Conversie</th>
+                                <th title="Analiz&#259; AI">&#129302;</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbodyConsultanti">
+                            <tr><td colspan="8" class="table-loading">Se incarca...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tab: Tendinte -->
+        <section class="tab-content" id="tab-tendinte">
+            <div class="chart-card chart-card-full">
+                <div class="chart-card-header">
+                    <span class="chart-title">Leads &amp; Dosare per Luna (ultimele 12 luni)</span>
+                </div>
+                <div class="chart-body">
+                    <div class="chart-wrap chart-wrap-line">
+                        <canvas id="chartTrendLinii"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="chart-card chart-card-full">
+                <div class="chart-card-header">
+                    <span class="chart-title">Valoare Credite per Luna (RON)</span>
+                </div>
+                <div class="chart-body">
+                    <div class="chart-wrap chart-wrap-bar-tall">
+                        <canvas id="chartTrendValoare"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tab: Analiza AI -->
+        <section class="tab-content" id="tab-analiza-ai">
+            <div class="ai-controls-bar">
+                <div class="ai-consultant-wrap">
+                    <label class="ai-limit-label">Consultant:</label>
+                    <div id="aiConsultantTree" class="ai-tree-container"></div>
+                </div>
+                <div class="ai-date-wrap">
+                    <label class="ai-limit-label">De la:</label>
+                    <input type="text" id="aiDateFrom" name="aiDateFrom" class="ai-date-input" data-custom-date="true">
+                </div>
+                <div class="ai-date-wrap">
+                    <label class="ai-limit-label">P&#226;n&#259; la:</label>
+                    <input type="text" id="aiDateTo" name="aiDateTo" class="ai-date-input" data-custom-date="true">
+                </div>
+                <div class="ai-summary" id="aiSummary">
+                    <span class="ai-summary-icon">&#129302;</span>
+                    <span id="aiSummaryText">Selecteaz&#259; perioada &#351;i apas&#259; Analizeaz&#259;</span>
+                </div>
+                <button class="ai-reload-btn" onclick="loadFeedbackAnalysis()">
+                    &#128260; Analizeaz&#259;
+                </button>
+            </div>
+
+            <div id="aiAnalysisGrid" class="analysis-grid">
+                <div class="ai-placeholder">
+                    <div class="ai-placeholder-icon">&#129302;</div>
+                    <div class="ai-placeholder-text">Selecteaz&#259; departamentul &#351;i apas&#259; <strong>Analizeaz&#259;</strong> pentru a porni analiza per consultant.</div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- AI Detail Modal -->
+    <div id="aiDetailModal" class="modal-overlay" style="display:none;" onclick="closeAiModal()">
+        <div class="modal-content ai-modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h3 id="aiModalTitle">Detalii Consultant</h3>
+                <button class="modal-close" onclick="closeAiModal()">&#10005;</button>
+            </div>
+            <div class="modal-body" id="aiModalBody">
+                <div class="ai-loading">&#9200; Se incarca...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast notifications -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <script type="module" src="{{ url_for('static', filename='js/admin/admin-stats.js') }}?v={{ cache_buster }}"></script>
+    <script src="{{ url_for('static', filename='js/admin/admin-session.js') }}?v={{ cache_buster }}"></script>
+</body>
+</html>

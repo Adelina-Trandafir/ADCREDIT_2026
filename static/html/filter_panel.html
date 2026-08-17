@@ -1,0 +1,34 @@
+<div id="filterPanel" class="filter-panel-container">
+  <!-- Header -->
+  <div id="filterPanelHeader" class="filter-panel-header">
+    <span class="filter-panel-icon">🔍</span>
+    <span class="filter-panel-title">FILTRARE DATE</span>
+    <div class="filter-panel-header-buttons">
+      <button class="filter-panel-btn-sticky" id="filterPanelStickyBtn" title="Fixează panel">
+        📌
+      </button>
+      <button class="filter-panel-btn-close" id="filterPanelCloseBtn" title="Închide panel">
+        ❌
+      </button>
+    </div>
+  </div>
+
+  <!-- Căutare coloane -->
+  <div id="filterPanelSearchSection" class="filter-panel-search-section">
+    <input
+      type="text"
+      class="filter-panel-search-input"
+      placeholder="Căutare coloane..."
+      id="filterPanelSearchInput"
+    />
+  </div>
+
+  <!-- Lista coloanelor -->
+  <div id="filterPanelColumnsList" class="filter-panel-columns-list">
+    <!-- Loading state -->
+    <div id="filterPanelLoading" class="filter-panel-loading">
+      <div class="filter-panel-spinner"></div>
+      <span>Se încarcă coloanele...</span>
+    </div>
+  </div>
+</div>

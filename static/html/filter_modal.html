@@ -1,0 +1,72 @@
+<div id="filterWindow" class="filter-window">
+  <div id="filterWindowContent" class="filter-window-content">
+    <!-- Header eliminat complet -->
+
+    <!-- Body cu accordion behavior -->
+    <div id="filterWindowBody" class="filter-window-body">
+      <!-- Filtru exact cu combobox -->
+      <div id="exactFilter" class="filter-window-options collapsed hidden">
+        <label>
+          <input id="exactFilterRadio" type="radio" name="filterType" value="exact" />
+          <span class="filter-window-options-label-text"><u>E</u>xact</span>
+          <span class="filter-window-exact-loader">⏳</span>
+        </label>
+        <div id="exactFilterContent" class="filter-window-options-content">
+          <div id="exactFilterContainer"></div>
+        </div>
+      </div>
+
+      <!-- Filtru parțial - DEFAULT ACTIV -->
+      <div id="partialFilter" class="filter-window-options collapsed hidden">
+        <label>
+          <input id="partialFilterRadio" type="radio" name="filterType" value="partial" checked />
+          <span class="filter-window-options-label-text"><u>P</u>arțial</span>
+        </label>
+        <div id="partialFilterContent" class="filter-window-options-content">
+          <input type="text" id="partialFilterText" placeholder="Introduceți textul..." />
+        </div>
+      </div>
+
+      <!-- Filtru interval -->
+      <div id="rangeFilter" class="filter-window-options collapsed hidden">
+        <label>
+          <input id="rangeFilterRadio" type="radio" name="filterType" value="range" />
+          <span class="filter-window-options-label-text"><u>I</u>nterval</span>
+        </label>
+        <div id="rangeFilterContent" class="filter-window-options-content">
+          <div id="rangeFilterInputs" class="filter-range-inputs">
+            <div id="calendarFromContainer" class="filter-calendar-container">
+              <label for="rangeFrom" class="filter-range-label">De la:</label>
+              <input type="text" id="rangeFrom" placeholder="De la..." />
+            </div>
+            <div id="calendarToContainer" class="filter-calendar-container">
+              <label for="rangeTo" class="filter-range-label">Până la:</label>
+              <input type="text" id="rangeTo" placeholder="Până la..." />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer cu butoane -->
+    <div id="filterButtons" class="filter-buttons">
+      <button
+        id="clearFilterBtn"
+        class="btn btn-secondary filter-window-btn filter-window-btn-clear"
+        type="button"
+        title="Șterge filtrul activ"
+      >
+        <span class="btn-icon-span">🗑️</span>
+        <span class="btn-text-span">Șterge</span>
+      </button>
+      <button
+        id="applyFilterBtn"
+        class="btn btn-primary filter-window-btn filter-window-btn-apply"
+        type="button"
+        title="Aplică filtrul"
+      >
+        <span class="btn-text-span">Aplică</span><span class="btn-icon-span">✅</span>
+      </button>
+    </div>
+  </div>
+</div>

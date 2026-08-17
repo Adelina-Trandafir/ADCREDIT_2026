@@ -1,0 +1,14 @@
+[0;1;32m●[0m adcredit3.service - ADCREDIT3 - Flask CRM
+     Loaded: loaded (]8;;file://vps137490.whmpanels.com/etc/systemd/system/adcredit3.service/etc/systemd/system/adcredit3.service]8;;; [0;1;32menabled[0m; preset: [0;1;32menabled[0m)
+     Active: [0;1;32mactive (running)[0m since Tue 2026-03-24 09:23:12 UTC; 26ms ago
+   Main PID: 216585 (gunicorn)
+     Status: "[0;1;36mGunicorn arbiter booted[0m"
+      Tasks: 1 (limit: 2207)
+     Memory: 14.1M (peak: 14.3M)
+        CPU: 111ms
+     CGroup: /system.slice/adcredit3.service
+             └─[0;38;5;245m216585 /root/ADCREDIT3/.venv/bin/python3.13 /root/ADCREDIT3/.venv/bin/gunicorn --workers 3 --worker-class sync --bind unix:/run/adcredit3/adcredit3.sock --umask 007 --log-level debug --access-logfile /var/log/adcredit3/access.log --error-logfile /var/log/adcredit3/error.log --capture-output --timeout 60 app:app[0m
+
+Mar 24 09:23:12 vps137490.whmpanels.com systemd[1]: adcredit3.service: Scheduled restart job, restart counter is at 18.
+Mar 24 09:23:12 vps137490.whmpanels.com systemd[1]: Starting adcredit3.service - ADCREDIT3 - Flask CRM...
+Mar 24 09:23:12 vps137490.whmpanels.com systemd[1]: Started adcredit3.service - ADCREDIT3 - Flask CRM.

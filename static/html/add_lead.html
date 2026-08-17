@@ -1,0 +1,81 @@
+<!-- ADD LEAD MODAL - Template HTML -->
+<!-- Flag Icons CSS - Steaguri SVG -->
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css"
+/>
+
+<div class="add-lead-header">
+  <h2>Adaugă Lead</h2>
+  <span id="addLead_loading" class="hidden spinner add-lead-loading">⏳</span>
+</div>
+
+<div class="add-lead-body">
+  <!-- TOP SECTION: Imagine + Form -->
+  <div class="add-lead-top-section">
+    <span class="add-lead-image">✆</span>
+    <form id="addLead_form" class="add-lead-form">
+      <!-- Country selector -->
+      <div class="add-lead-tara">
+        <div id="addLead_steag" class="add-lead-steag">
+          <!-- Combobox cu steagurile țărilor -->
+        </div>
+      </div>
+
+      <!-- Phone input -->
+      <div class="add-lead-telefon">
+        <input
+          type="text"
+          id="telefon"
+          name="telefon"
+          placeholder="Introdu numărul de telefon..."
+          required
+        />
+      </div>
+    </form>
+  </div>
+
+  <!-- MIDDLE SECTION: Tabel rezultate -->
+  <div id="addLead_middle_section" class="add-lead-middle-section hidden">
+    <div class="add-lead-table-container">
+      <div class="add-lead-table-wrapper">
+        <table class="add-lead-table">
+          <thead>
+            <tr>
+              <th class="add-lead-table-header record-selector">UTIL</th>
+              <th class="add-lead-table-header">Nume Consultant</th>
+              <th class="add-lead-table-header">Telefon Consultant</th>
+              <th class="add-lead-table-header">Dată Adăugare</th>
+              <th class="add-lead-table-header">Status Actual</th>
+            </tr>
+          </thead>
+          <tbody id="addLead_TableBody">
+            <tr>
+              <td colspan="5" class="loading">Se încarcă...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Table footer cu butoane Nou/Vechi -->
+      <div class="add-lead-table-footer">
+        <button id="addLead_Nou" class="add-lead-nou-btn">
+          <span class="btn-icon-span">➕</span><span class="btn-text-span">Adaugă Lead</span>
+        </button>
+        <button id="addLead_Vechi" class="add-lead-vechi-btn" disabled>
+          <span class="btn-icon-span">♻️</span><span class="btn-text-span">Folosește Lead</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER: Butoane Cancel/OK -->
+<div class="add-lead-footer">
+  <button id="addLead_Cancel" class="btn btn-secondary add-lead-cancel-btn">
+    <span class="btn-icon-span">❌</span><span class="btn-text-span">Anulează</span>
+  </button>
+  <button id="addLead_Ok" class="btn btn-primary add-lead-ok-btn" disabled>
+    <span class="btn-text-span">Confirmă</span><span class="btn-icon-span">✅</span>
+  </button>
+</div>

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>🛡️ Admin Login</title>
+   <link rel="stylesheet" href="{{ url_for('static', filename='css/admin_login.css') }}?v={{ cache_buster }}">
+</head>
+<body>
+   <div class="admin-container">
+       <div class="admin-header">
+           <div class="admin-logo">🛡️</div>
+           <h1>ADMIN LOGIN</h1>
+           <p>Acces restricționat</p>
+       </div>
+       
+       <div class="security-warning">
+           <span class="warning-icon">⚠️</span>
+           <span>Doar pentru administratori autorizați</span>
+       </div>
+       
+       <form id="adminLoginForm" class="admin-form">
+           <!-- PASUL 1: Email Administrator -->
+           <div class="input-group">
+               <input type="email" id="adminEmail" placeholder="Email Administrator" disabled autocomplete="off">
+               <span class="input-icon">👤</span>
+               <span class="validation-icon" id="emailValidationIcon"></span>
+               <button type="button" class="visibility-toggle" onclick="toggleVisibility('adminEmail')">
+                   👁️
+               </button>
+           </div>
+           
+           <!-- PASUL 2: Cheie Specială Admin (INACTIV inițial) -->
+           <div class="input-group">
+               <input type="password" id="adminKey" placeholder="Cheie Specială Admin" disabled autocomplete="off">
+               <span class="input-icon">🔑</span>
+               <span class="validation-icon" id="keyValidationIcon"></span>
+               <button type="button" class="visibility-toggle" onclick="toggleVisibility('adminKey')" disabled>
+                   👁️
+               </button>
+           </div>
+           
+           <!-- PASUL 3: Parolă Administrator (INACTIV inițial) -->
+           <div class="input-group">
+               <input type="password" id="adminPassword" placeholder="Parolă Administrator" disabled autocomplete="current-password">
+               <span class="input-icon">🔒</span>
+               <span class="validation-icon" id="passwordValidationIcon"></span>
+               <button type="button" class="visibility-toggle" onclick="toggleVisibility('adminPassword')" disabled>
+                   👁️
+               </button>
+           </div>
+           
+           <!-- Buton Submit (INACTIV inițial) -->
+           <button type="submit" id="loginBtn" class="admin-btn" disabled>
+               <span class="btn-text">AUTENTIFICARE</span>
+               <span class="btn-loader" style="display: none;">⏳</span>
+           </button>
+       </form>
+       
+       <!-- Progress indicator -->
+       <div class="progress-steps">
+           <div class="step active" id="step1">
+               <span class="step-number">1</span>
+               <span class="step-text">Email</span>
+           </div>
+           <div class="step" id="step2">
+               <span class="step-number">2</span>
+               <span class="step-text">Cheie</span>
+           </div>
+           <div class="step" id="step3">
+               <span class="step-number">3</span>
+               <span class="step-text">Parolă</span>
+           </div>
+       </div>
+       
+       <div id="errorMessage" class="error-message"></div>
+       <div id="successMessage" class="success-message"></div>
+       
+       <div class="footer-links">
+           <a href="/login" class="back-link">← Login normal</a>
+       </div>
+   </div>
+   
+   <script src="{{ url_for('static', filename='js/admin/admin-login.js') }}?v={{ cache_buster }}"></script>
+</body>
+</html>

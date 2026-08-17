@@ -1,0 +1,691 @@
+/**
+ * 📋 FILTER PANEL MANAGER
+ * Gestionează panelul lateral de filtrare (panel-dreapta)
+ *
+ * CARACTERISTICI:
+ * ✅ Event-bus integration
+ * ✅ ListenerTracker pentru cleanup automat
+ * ✅ Instances Registry pentru singleton
+ * ✅ Încărcare dinamică coloane din API
+ * ✅ Integrare cu filter-manager
+ *
+ * FUNCȚIONALITATE:
+ * - Se încarcă în panel-dreapta când se apasă butonul filter-panel
+ * - Afișează lista coloanelor disponibile pentru filtrare
+ * - Sincronizare cu iconițele de filtru din tabel
+ *
+ * @version 4.0.0 - MODULAR ARCHITECTURE
+ * @author Adelina Trandafir - Avatar Soft SRL
+ */
+
+//import '../../global-variables.js';
+import eventBus, { EVENTS } from '../../event-bus/event-bus.js';
+import ListenerTracker from '../../listener-tracker/listener-tracker-mixin.js';
+import { registerInstance, getInstance } from '../../instances-registry.js';
+
+class FilterPanel {
+  constructor() {
+    // Singleton check
+    if (FilterPanel.instance) {
+      console.warn('⚠️ FilterPanel is singleton');
+      return FilterPanel.instance;
+    }
+
+    this.debugMode = false;
+
+    // Aplică ListenerTracker mixin
+    ListenerTracker.applyTo(this, {
+      debugMode: this.debugMode || false,
+      logPrefix: 'FilterPanel',
+      trackPerformance: true,
+    });
+
+    // State management
+    this.isInitialized = false;
+    this.isVisible = false;
+    this.panelContent = null;
+    this.columnsList = null;
+    this.searchInput = null;
+    this.requestSource = null;
+    this.activeElement = null;
+
+    // Cache pentru coloane
+    this.columnsCache = null;
+    this.lastLoadTime = null;
+    this.cacheTimeout = 5 * 60 * 1000; // 5 minute
+
+    // Configurație
+    this.config = {
+      panelId: 'panel-dreapta',
+      apiEndpoint: '/api/all-columns-cached',
+      loadingTimeout: 10000,
+    };
+
+    // Statistici
+    this.stats = {
+      opens: 0,
+      rowsClicks: 0,
+      apiCalls: 0,
+      errors: 0,
+    };
+
+    // Stare sub-panel
+    this.subPanelState = {
+      activeElement: null,
+      currentSubPanel: null,
+      isVisible: false,
+      currentFieldName: '',
+      currentDisplayName: '',
+    };
+
+    // Store singleton
+    FilterPanel.instance = this;
+
+    // Auto-register în registry
+    registerInstance('filterPanel', this, {
+      version: '4.0.0',
+      description: 'Filter Panel Manager for right sidebar',
+      dependencies: ['eventBus', 'filterManager', 'listenerTracker'],
+    });
+
+    this.log('✅ FilterPanel creat');
+  }
+
+  /**
+   * 🚀 INIȚIALIZARE
+   */
+  init() {
+    if (this.isInitialized) {
+      this.log('⚠️ FilterPanel deja inițializat');
+      return true;
+    }
+
+    try {
+      // Setup event listeners
+      this.setupBUSListeners();
+
+      this.isInitialized = true;
+      this.log('✅ FilterPanel inițializat');
+
+      return true;
+    } catch (error) {
+      this.handleError('Eroare la inițializare', error);
+      return false;
+    }
+  }
+
+  /**
+   * 🚀 INIȚIALIZARE UI
+   */
+  async initializeUI() {
+    this.log('🎨 Inițializare Filter UI...');
+
+    // Încarcă template-ul modal
+    await this.ensureModalExists();
+
+    // Setup DOM listeners pentru modal
+    this.setupModalEventListeners(this.modalElement);
+
+    // Actualizează toate vizualurile existente
+    this.updateAllFilterVisuals();
+
+    this.log('✅ Filter UI inițializat');
+  }
+
+  /**
+   * 📂 CÂND PANELUL SE DESCHIDE
+   */
+  async onPanelOpened() {
+    this.log('📂 Panel deschis, încep inițializarea conținutului');
+    this.isVisible = true;
+    this.stats.opens++;
+
+    try {
+      // Găsește elementul panel
+      const panel = document.getElementById(this.config.panelId);
+      if (!panel) {
+        throw new Error('Elementul panel nu a fost găsit');
+      }
+
+      // Găsește content area
+      this.panelContent = panel.querySelector('.panel-content');
+      if (!this.panelContent) {
+        throw new Error('Panel content area nu a fost găsită');
+      }
+
+      // Încarcă template-ul
+      await this.loadPanelTemplate();
+
+      // Încarcă coloanele
+      await this.renderColumns();
+
+      // Setup search functionality
+      this.setupSearch();
+
+      // Setup button listeners
+      this.setupButtonsListeners();
+
+      eventBus.emit(EVENTS.PANEL_POPULATED, {
+        panelId: this.config.panelId,
+        type: this.config.type,
+        timestamp: Date.now(),
+      });
+    } catch (error) {
+      this.handleError('Eroare la deschiderea panelului', error);
+    }
+  }
+
+  setupButtonsListeners() {
+    const closeButton = this.panelContent.querySelector('#filterPanelCloseBtn');
+    const stickyButton = this.panelContent.querySelector('#filterPanelStickyBtn');
+
+    if (!closeButton || !stickyButton) {
+      this.handleError('Butonul de închidere sau sticky nu a fost găsit');
+      return;
+    }
+
+    this.addClickListener(closeButton, (event) => this.handleCloseButtonClick(event));
+    this.addClickListener(stickyButton, (event) => this.handleStickyButtonClick(event));
+  }
+
+  /**
+   * 📄 ÎNCARCĂ TEMPLATE-UL HTML
+   */
+  async loadPanelTemplate() {
+    this.log('📄 Încarc template-ul pentru filter panel');
+
+    try {
+      const response = await fetch('/static/html/filter_panel.html');
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const template = await response.text();
+
+      // Setează conținutul în panel
+      this.panelContent.innerHTML = template;
+
+      // Cache referințe DOM
+      this.columnsList = document.getElementById('filterPanelColumnsList');
+      this.searchInput = document.getElementById('filterPanelSearchInput');
+
+      this.log('✅ Template încărcat cu succes');
+    } catch (error) {
+      this.handleError('Eroare la încărcarea template-ului', error);
+    }
+  }
+
+  /**
+   * 🎨 RENDER COLOANE ÎN LISTĂ
+   */
+  async renderColumns() {
+    this.columnsCache = getInstance('tableBuilder').columns;
+    const columnsMap = this.columnsCache;
+
+    if (!columnsMap || columnsMap.size === 0) {
+      this.log.error('⚠️ Nu există coloane de redat');
+      this.showError('Nu am putut încărca coloanele');
+      return;
+    }
+
+    this.log(`🎨 Render ${columnsMap.size} coloane`);
+
+    // Curăță loading state
+    this.showLoading(false);
+
+    // Construiește HTML pentru coloane
+    let html = '';
+
+    // Obține filtrele active de la filter-manager
+    const filterManagerInstance = getInstance('filterManager');
+    const activeFilters = filterManagerInstance ? filterManagerInstance.activeFilters : new Map();
+
+    // Convertește Map în array pentru prelucrare
+    const columnsArray = Array.from(columnsMap.values());
+
+    // Filtrează array-ul obținut din Map
+    const filteredColumns = columnsArray.filter((column) => column['AscunsInFiltru'] == 0);
+
+    // Sortează array-ul filtrat
+    const sortedColumns = filteredColumns.sort((a, b) => {
+      const nameA = String(a['header'] || '');
+      const nameB = String(b['header'] || '');
+      return nameA.localeCompare(nameB);
+    });
+
+    // Iterează prin array-ul sortat
+    for (const currentColumn of sortedColumns) {
+      const columnId = currentColumn['id'];
+      const displayName = currentColumn['header'];
+      const hasFilter = activeFilters.has(columnId);
+      const filterClass = hasFilter ? 'has-filter' : '';
+      const filterIcon = hasFilter ? '🔵' : '⚪';
+
+      html += `
+        <div id="panel-right-filter-column-${columnId}" class="panel-right-filter-column-item ${filterClass}" data-field="${columnId}">
+          <span class="panel-right-filter-status-icon">${filterIcon}</span>
+          <span class="panel-right-column-display-name">${displayName}</span>
+          ${hasFilter ? '<span class="panel-right-filter-active-badge">Activ</span>' : ''}
+        </div>
+      `;
+    }
+
+    this.columnsList.innerHTML = html;
+
+    // Adaugă click handlers
+    this.setupColumnClickHandlers();
+
+    // Update counter în header
+    this.updateFilterCounter();
+  }
+
+  /**
+   * 🖱️ SETUP CLICK HANDLERS PENTRU COLOANE
+   */
+  setupColumnClickHandlers() {
+    // Folosește event delegation pentru performanță
+    this.addDOMListener(this.columnsList, 'click', (e) => {
+      const columnItem = e.target.closest('.panel-right-filter-column-item');
+      if (!columnItem) return;
+
+      const columnId = columnItem.dataset.field;
+      const displayName = columnItem.querySelector('.panel-right-column-display-name').textContent;
+
+      this.handleRowClick(columnId, displayName);
+    });
+
+    this.log('🖱️ Click handlers configurați pentru coloane');
+  }
+
+  /** HANDLER BUTON ÎNCHIDERE */
+  handleCloseButtonClick(event) {
+    event.stopPropagation();
+    this.onPanelClosed();
+    this.log('❌ Buton închidere apăsat');
+    eventBus.emit(EVENTS.PANEL_HIDE_REQUEST, { panelId: this.config.panelId });
+  }
+
+  /** HANDLE STICKY BUTTON */
+  handleStickyButtonClick(event) {
+    event.stopPropagation();
+    eventBus.emit(EVENTS.PANEL_STICKY_TOGGLE_REQUEST, this.config.panelId);
+    this.log('📌 Buton sticky apăsat');
+  }
+
+  /**
+   * 🎯 HANDLER CLICK PE COLOANĂ
+   */
+  handleRowClick(columnId, displayName) {
+    this.log(`🖱️ Click pe coloană: ${displayName}`);
+    this.stats.rowsClicks++;
+    let subPanel = null;
+
+    const columnItem = this.columnsList.querySelector(`[data-field="${columnId}"]`);
+    if (!columnItem) {
+      this.handleError('Element coloană nu a fost găsit');
+      return;
+    }
+
+    // Obține filter manager instance
+    const filterManagerInstance = getInstance('filterManager');
+    if (!filterManagerInstance) {
+      this.handleError('Filter Manager nu este disponibil');
+      return;
+    }
+
+    const activeFilters = filterManagerInstance.activeFilters;
+    const activeColumn = Array.from(this.columnsCache.values()).find((col) => col.id === columnId);
+
+    // Construiește obiect column data similar cu cel din table
+    const filterData = {
+      id: columnId,
+      field: columnId,
+      name: displayName,
+      hasFilter: activeFilters.has(columnId),
+      filter: activeFilters.get(columnId)?.filterString || null,
+      filterConfig: activeFilters.get(columnId) || null,
+    };
+
+    this.hideSubPanel();
+
+    if (this.activeElement === columnId) {
+      this.activeElement = null;
+    } else {
+      this.activeElement = columnId;
+      subPanel = this.showSubPanel(columnItem, columnId, displayName);
+    }
+
+    // Emit event pentru a deschide filter modal
+    eventBus.emit(EVENTS.FILTER_SHOW_WINDOW, {
+      columnData: activeColumn,
+      filterData: filterData,
+      subPanel: subPanel,
+      source: 'filter-panel',
+    });
+  }
+
+  /**
+   * 🔍 SETUP FUNCȚIONALITATE CĂUTARE
+   */
+  setupSearch() {
+    if (!this.searchInput) return;
+
+    let searchTimeout;
+
+    this.addDOMListener(this.searchInput, 'input', (e) => {
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(() => {
+        this.performSearch(e.target.value);
+      }, 300);
+    });
+
+    // Clear search on ESC
+    this.addDOMListener(this.searchInput, 'keydown', (e) => {
+      e.stopPropagation();
+      if (e.key === 'Escape') {
+        e.target.value = '';
+        this.performSearch('');
+      }
+    });
+
+    this.log('🔍 Funcționalitate căutare configurată');
+  }
+
+  /**
+   * 🔎 EXECUTĂ CĂUTARE
+   */
+  performSearch(searchTerm) {
+    const items = this.columnsList.querySelectorAll('.panel-right-filter-column-item');
+    const term = searchTerm.toLowerCase().trim();
+
+    let visibleCount = 0;
+
+    items.forEach((item) => {
+      const displayName = item.querySelector('.panel-right-column-display-name').textContent;
+      const matches = displayName.toLowerCase().includes(term);
+
+      item.style.display = matches ? 'flex' : 'none';
+      if (matches) visibleCount++;
+    });
+
+    // Afișează mesaj dacă nu sunt rezultate
+    let noResultsMsg = this.columnsList.querySelector('.no-search-results');
+    if (visibleCount === 0 && term) {
+      if (!noResultsMsg) {
+        noResultsMsg = document.createElement('div');
+        noResultsMsg.className = 'no-search-results';
+        noResultsMsg.textContent = 'Nu s-au găsit coloane care să corespundă căutării';
+        this.columnsList.appendChild(noResultsMsg);
+      }
+      noResultsMsg.style.display = 'block';
+    } else if (noResultsMsg) {
+      noResultsMsg.style.display = 'none';
+    }
+  }
+
+  /**
+   * 🔄 UPDATE STATUS FILTRU PENTRU O COLOANĂ
+   */
+  updateColumnFilterStatus(columnData, hasFilter) {
+    if (!this.isVisible) return;
+    const columnId = columnData.data.columnId;
+
+    const columnItem = this.columnsList.querySelector(`[data-field="${columnId}"]`);
+    if (!columnItem) return;
+
+    const icon = columnItem.querySelector('.panel-right-filter-status-icon');
+    const badge = columnItem.querySelector('.panel-right-filter-active-badge');
+
+    if (hasFilter) {
+      columnItem.classList.add('has-filter');
+      if (icon) icon.textContent = '🔵';
+      if (!badge) {
+        const newBadge = document.createElement('span');
+        newBadge.className = 'panel-right-filter-active-badge';
+        newBadge.textContent = 'Activ';
+        columnItem.appendChild(newBadge);
+      }
+    } else {
+      columnItem.classList.remove('has-filter');
+      if (icon) icon.textContent = '⚪';
+      if (badge) badge.remove();
+    }
+
+    this.updateFilterCounter();
+  }
+
+  /**
+   * 📊 UPDATE COUNTER FILTRE ACTIVE
+   */
+  updateFilterCounter() {
+    const filterManagerInstance = getInstance('filterManager');
+    const activeCount = filterManagerInstance ? filterManagerInstance.activeFilters.size : 0;
+    const header = this.panelContent.querySelector('.filter-panel-header');
+
+    let counter = header.querySelector('.filter-counter');
+    if (activeCount > 0) {
+      if (!counter) {
+        counter = document.createElement('span');
+        counter.className = 'filter-counter';
+        counter.style.cursor = 'help';
+        header.appendChild(counter);
+      }
+      counter.textContent = `(${activeCount})`;
+      counter.title = `${activeCount} ${activeCount === 1 ? 'filtru activ' : 'filtre active'}`;
+    } else if (counter) {
+      counter.remove();
+    }
+  }
+
+  /**
+   * ❌ CÂND PANELUL SE ÎNCHIDE
+   */
+  async onPanelClosed() {
+    this.isVisible = false;
+
+    // Cleanup
+    if (this.panelContent) {
+      const stats = this.cleanupAllListeners('dom');
+      this.log('🧹 Cleanup stats:', stats);
+      this.panelContent.innerHTML = '';
+    }
+
+    this.columnsList = null;
+    this.searchInput = null;
+    this.log('❌ Panel închis');
+  }
+
+  /**
+   * 🔄 LOADING STATE
+   */
+  showLoading(show) {
+    const loading = document.getElementById('filterPanelLoading');
+    if (loading) {
+      loading.style.display = show ? 'flex' : 'none';
+    }
+  }
+
+  /**
+   * ❌ AFIȘARE EROARE
+   */
+  showError(message) {
+    if (!this.columnsList) return;
+
+    this.columnsList.innerHTML = `
+      <div class="filter-panel-error">
+        <span class="error-icon">⚠️</span>
+        <span class="error-message">${message}</span>
+        <button class="retry-button" onclick="filterPanel.renderColumns(true)">
+          Reîncearcă
+        </button>
+      </div>
+    `;
+  }
+
+  /**
+   * 🚨 ERROR HANDLER
+   */
+  handleError(message, error = null) {
+    this.stats.errors++;
+    console.error(`❌ [FilterPanel] ${message}`, error);
+
+    eventBus.emit(EVENTS.ERROR_OCCURRED, {
+      source: 'FilterPanel',
+      message,
+      error: error?.message || error,
+      timestamp: Date.now(),
+    });
+  }
+
+  /**
+   * 🧹 CLEANUP
+   */
+  destroy() {
+    this.log('🧹 Destroying FilterPanel');
+
+    const stats = this.cleanupAllListeners();
+    this.log('🧹 Cleanup stats:', stats);
+
+    // Clear cache
+    this.columnsCache = null;
+    this.lastLoadTime = null;
+
+    // Clear references
+    this.panelContent = null;
+    this.columnsList = null;
+    this.searchInput = null;
+
+    this.isInitialized = false;
+    this.isVisible = false;
+  }
+
+  /**
+   * 📊 GET STATS
+   */
+  getStats() {
+    return {
+      ...this.stats,
+      isVisible: this.isVisible,
+      hasCachedColumns: !!this.columnsCache,
+      cacheAge: this.lastLoadTime ? Date.now() - this.lastLoadTime : null,
+    };
+  }
+
+  clearHighlightColumnRow() {
+    if (!this.isVisible || !this.columnsList) return;
+
+    const allItems = this.columnsList.querySelectorAll('.panel-right-filter-column-item');
+    allItems.forEach((item) => {
+      item.classList.remove('simulated-hover');
+    });
+  }
+
+  /**
+   * 🎯 HIGHLIGHT RÂND COLOANĂ
+   */
+  highlightColumnRow(columnId) {
+    const columnRow = this.columnsList.querySelector(
+      `[data-field="${columnId}"].panel-right-filter-column-item`
+    );
+    if (columnRow) {
+      columnRow.classList.add('simulated-hover');
+      columnRow.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+      });
+    }
+  }
+
+  showSubPanel(columnElement, fieldName, displayName) {
+    const subPanel = this.createSubPanel(fieldName);
+    columnElement.parentNode.insertBefore(subPanel, columnElement.nextSibling);
+
+    this.subPanelState = {
+      activeElement: columnElement,
+      currentSubPanel: subPanel,
+      isVisible: true,
+      currentFieldName: fieldName,
+      currentDisplayName: displayName,
+    };
+
+    columnElement.classList.add('expanded');
+    this.log(`📂 Sub-panel afișat pentru: ${displayName}`);
+
+    return subPanel;
+  }
+
+  hideSubPanel() {
+    if (!this.subPanelState.isVisible || !this.subPanelState.currentSubPanel) {
+      return;
+    }
+
+    if (this.subPanelState.activeElement) {
+      this.subPanelState.activeElement.classList.remove('expanded');
+    }
+
+    this.subPanelState.currentSubPanel.remove();
+
+    this.subPanelState = {
+      activeElement: null,
+      currentSubPanel: null,
+      isVisible: false,
+      currentFieldName: '',
+      currentDisplayName: '',
+    };
+
+    this.log('❌ Sub-panel ascuns');
+  }
+
+  createSubPanel(fieldName) {
+    const subPanel = document.createElement('div');
+    subPanel.id = `filterPanelSubpanel${fieldName}`;
+    subPanel.className = 'filter-panel-subpanel';
+    subPanel.innerHTML = `
+      <div id="filterPanelSubpanelContent${fieldName}" class="filter-panel-subpanel-content">
+        <div id="filterPanelSubpanelLoading" class="filter-panel-subpanel-loading">Se încarcă opțiunile de filtrare...</div>
+      </div>
+    `;
+    return subPanel;
+  }
+
+  log = (() => {
+    const fn = (message, data = null) => {
+      if (this.debugMode) {
+        const now = new Date();
+        const ts = `${now.toLocaleTimeString('en-GB', { hour12: false })}.${now
+          .getMilliseconds()
+          .toString()
+          .padStart(3, '0')}`;
+        const CPN = 'FilterPanel'.padEnd(15);
+        console.log(
+          `%c[${ts}] [${CPN}] ${message}`,
+          'color: #a37efcff; font-weight: bold;',
+          data ?? ''
+        );
+      }
+    };
+
+    fn.error = (message, data = null) => {
+      const now = new Date();
+      const ts = `${now.toLocaleTimeString('en-GB', { hour12: false })}.${now
+        .getMilliseconds()
+        .toString()
+        .padStart(3, '0')}`;
+      const CPN = 'FilterPanel'.padEnd(15);
+      console.error(
+        `%c[${ts}] [${CPN}] ${message}`,
+        'color: #ff3333; font-weight: bold;',
+        data ?? ''
+      );
+    };
+
+    return fn;
+  })();
+}
+
+// Creează instanța singleton
+const filterPanel = new FilterPanel();
+
+// Export
+export default filterPanel;

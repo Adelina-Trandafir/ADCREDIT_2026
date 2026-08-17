@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Log Panel</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 10px;
+      }
+      #logContainer {
+        height: 500px;
+        overflow-y: auto;
+        border: 1px solid #ccc;
+        padding: 10px;
+      }
+      .logGroup {
+        margin-bottom: 10px;
+      }
+      .logEntry {
+        margin-left: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>Log Panel</h2>
+    <div id="logContainer"></div>
+
+    <script>
+      const logContainer = document.getElementById('logContainer');
+      window.addEventListener('message', (event) => {
+        if (event.data.type === 'log') {
+          const { module, message, data, timestamp } = event.data;
+          const logGroup = document.createElement('div');
+          logGroup.className = 'logGroup';
+          logGroup.innerHTML = `<strong>${module} [${timestamp}]</strong>`;
+
+          const logEntry = document.createElement('div');
+          logEntry.className = 'logEntry';
+          logEntry.innerHTML = `<p>${message}</p><pre>${JSON.stringify(data, null, 2)}</pre>`;
+
+          logGroup.appendChild(logEntry);
+          logContainer.appendChild(logGroup);
+          logContainer.scrollTop = logContainer.scrollHeight; // Scroll la ultimul mesaj
+        }
+      });
+    </script>
+  </body>
+</html>

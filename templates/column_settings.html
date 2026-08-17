@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="ro">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gestionare Coloane</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/column_settings.css') }}" />
+  </head>
+  <body>
+    <div class="container">
+      <h1>
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <rect x="3" y="3" width="7" height="7"></rect>
+          <rect x="14" y="3" width="7" height="7"></rect>
+          <rect x="14" y="14" width="7" height="7"></rect>
+          <rect x="3" y="14" width="7" height="7"></rect>
+        </svg>
+        Gestionare Coloane
+      </h1>
+
+      <div class="header-actions">
+        <div class="tab-selector">
+          <button class="tab-btn active" data-tab="nvB1">Baza</button>
+          <button class="tab-btn" data-tab="nvB2">Dosar</button>
+          <button class="tab-btn" data-tab="nvB3">Contract</button>
+          <button class="tab-btn" data-tab="nvB4">Factură</button>
+        </div>
+
+        <div class="quick-actions">
+          <button class="btn" onclick="showAllColumns()">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+              <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+            Arată toate
+          </button>
+          <button class="btn" onclick="hideAllColumns()">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path
+                d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"
+              ></path>
+              <line x1="1" y1="1" x2="23" y2="23"></line>
+            </svg>
+            Ascunde toate
+          </button>
+          <button class="btn" onclick="resetToDefaults()">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <polyline points="23 4 23 10 17 10"></polyline>
+              <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+            </svg>
+            Resetează
+          </button>
+        </div>
+      </div>
+
+      <div class="search-box">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"></circle>
+          <path d="m21 21-4.35-4.35"></path>
+        </svg>
+        <input type="text" placeholder="Caută coloane..." onkeyup="filterColumns(this.value)" />
+      </div>
+
+      <div id="columnsContainer">
+        <div class="loading">
+          <div class="spinner"></div>
+          <p>Se încarcă coloanele...</p>
+        </div>
+      </div>
+
+      <div class="save-section">
+        <div class="save-info" id="saveInfo">Toate modificările sunt salvate</div>
+        <button class="save-btn" onclick="saveSettings()" disabled>
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+            <polyline points="17 21 17 13 7 13 7 21"></polyline>
+            <polyline points="7 3 7 8 15 8"></polyline>
+          </svg>
+          Salvează Modificările
+        </button>
+      </div>
+    </div>
+
+    <div class="tooltip" id="tooltip"></div>
+    <script type="module" src="{{ url_for('static', filename='js/global-variables.js') }}"></script>
+    <script
+      type="module"
+      src="{{ url_for('static', filename='js/modules/column-settings.js') }}"
+    ></script>
+  </body>
+</html>

@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="ro">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>AD.CREDIT 3 - Dashboard</title>
+
+    <!-- CSS VARIABILE -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/global.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/variables.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/overlay_manager.css') }}" />
+
+    <!-- CSS Module -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/sort_filter.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/combobox.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/calendar.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/treeview/treeview.css') }}" />
+
+    <!-- CSS Layout de bază -->
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/dashboard_base_layout.css') }}"
+    />
+
+    <!-- CSS PANELE - Separate -->
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/dashboard_panel_left.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/dashboard_panel_right.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/dashboard_panel_bottom.css') }}"
+    />
+
+    <!-- CSS TABEL - Separat -->
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/dashboard_table/dashboard_table.css') }}"
+    />
+
+    <!-- CSS FILTRARE - Panel -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/filter_panel_right.css') }}" />
+  </head>
+  <body>
+    <!-- Header simplificat -->
+    <div class="header">
+      <div class="logo">🏢 SVN ROMANIA | CREDIT & FINANCIAL SOLUTIONS</div>
+      <div class="user-info">
+        <span>👤 {{ session.user }}</span>
+        <span>Ver.3.0.1</span>
+        <button id="logoutBtn" class="logout-btn">Deconectare</button>
+      </div>
+    </div>
+
+    <!-- Container principal -->
+    <div id="mainContainer" class="main-container">
+      <!-- Zona tabel și filtrare -->
+      <div id="tableFilterArea" class="table-and-filter-area">
+        <!-- Container tabel -->
+        <div id="tableContainer" class="table-container">
+          <!-- Tab-uri + Buton opțiuni -->
+          <div id="tabs" class="table-tabs">
+            <div id="tabsLeft" class="tabs-left">
+              <div id="tabBaza" class="table-tab active" data-view="viewBaza_2025">
+                <div class="tabs-icon">📋</div>
+                <div class="tabs-text">Bază</div>
+              </div>
+              <div id="tabDosar" class="table-tab" data-view="viewDosar_2025">
+                <div class="tabs-icon">📁</div>
+                <div class="tabs-text">Dosare</div>
+              </div>
+              <div id="tabIpotecare" class="table-tab" data-view="viewIpotecare_2025">
+                <div class="tabs-icon">🏠</div>
+                <div class="tabs-text">Ipotecare</div>
+              </div>
+            </div>
+
+            <div id="optionsPanel" class="options-panel">
+              <div id="optionsTrigger" class="options-trigger">
+                <div class="tabs-icon">⚙️</div>
+                <div class="tabs-text">Opțiuni</div>
+              </div>
+              <div id="optionsDD" class="options-dropdown">
+                <!-- <div class="options-header">OPȚIUNI</div> -->
+                <button id="select-mode" class="options-btn">☑️ Selectează Rânduri</button>
+                <button id="export-data" class="options-btn">📤 Export</button>
+                <button id="column-settings" class="options-btn">⚙️ Coloane</button>
+                <button id="filter-panel" class="options-btn">🔍 Filtrare</button>
+                {% if session.get('IdNivel', 0) >= 40 %}
+                <a href="/admin/dashboard" class="options-btn" id="admin-dashboard-btn">🎛️ Admin Dashboard</a>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+
+          <!-- Tabel -->
+          <div id="tableWrapper" class="table-wrapper">
+            <div id="loading" class="loading">
+              <div class="spinner-dashboard"></div>
+            </div>
+
+            <table id="dataTableHeader" class="data-table" style="display: none">
+              <thead class="table-header-fixed">
+                <tr id="tableHeaders">
+                  <!-- Headers vor fi generate dinamic -->
+                </tr>
+              </thead>
+            </table>
+
+            <!-- Container separat pentru scroll -->
+            <div id="tableBodyScroll" class="table-body-scroll">
+              <table id="dataTable" class="data-table-body">
+                <tbody id="tableBody">
+                  <!-- Date vor fi generate dinamic -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Footer tabel -->
+          <div class="table-footer">
+            <div class="footer-left">
+              <span id="recordCount">Încărcare date...</span>
+            </div>
+            <div class="footer-right">
+              <div id="stats-elements" class="stats-inline">
+                <span id="red" class="stat-item-small stat-red">
+                  <span>🔴</span>
+                  <span id="stat-red">-</span>
+                </span>
+                <span id="green" class="stat-item-small stat-green">
+                  <span>🟢</span>
+                  <span id="stat-green">-</span>
+                </span>
+                <span id="yellow" class="stat-item-small stat-yellow">
+                  <span>🟡</span>
+                  <span id="stat-yellow">-</span>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Panel lateral dreapta - Filtrare -->
+      <div id="panel-dreapta" class="right-panel hidden">
+        <div class="panel-content"></div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <div class="footer-buttons-left">
+        <button id="footer-button1" class="footer-btn addLead" data-tooltip="Adaugă un LEAD nou">
+          <span class="footer-button-icon-span">➕</span
+          ><span class="footer-button-text-span">ADAUGĂ LEAD</span>
+        </button>
+        <button
+          id="footer-button2"
+          class="footer-btn edit"
+          data-tooltip="Modifică LEAD-ul selectat"
+        >
+          <span class="footer-button-icon-span">✏️</span
+          ><span class="footer-button-text-span">MODIFICĂ LEAD</span>
+        </button>
+        <button
+          id="footer-button3"
+          class="footer-btn feedback"
+          data-tooltip="Adaugă feedback pentru LEAD-ul selectat"
+        >
+          <span class="footer-button-icon-span">💬</span
+          ><span class="footer-button-text-span">ADAUGĂ FEEDBACK</span>
+        </button>
+      </div>
+      <div class="footer-buttons-right">
+        <button
+          id="footer-button4"
+          class="footer-btn delete hidden"
+          data-tooltip="Șterge LEAD-ul selectat! ATENȚIE! Operațiunea este ireversibilă!"
+        >
+          <span class="footer-button-icon-span">🗑️</span
+          ><span class="footer-button-text-span">ȘTERGE LEAD</span>
+        </button>
+        <button
+          id="footer-button5"
+          class="footer-btn transfer"
+          data-tooltip="Transferă LEAD-ul în DOSARE"
+        >
+          <span class="footer-button-text-span">TRANSFERĂ LEAD</span>
+          <span class="footer-button-icon-span">🏦</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Scripturi pentru funcționalitate EXISTENTĂ -->
+    <script src="{{ url_for('static', filename='js/utils/z-max.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/utils/css.js') }}"></script>
+    <!-- <script src="{{ url_for('static', filename='js/utils/mutations.js') }}"></script> -->
+    <script type="module" src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+  </body>
+</html>
+<!-- End of file: templates/dashboard.html -->

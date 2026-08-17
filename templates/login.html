@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="ro">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AD.CREDIT 2026 WEB - Autentificare</title>
+
+    <!-- CSS Files -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/variables.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/combobox.css') }}" />
+  </head>
+  <body>
+    <div class="login-container">
+      <!-- Secțiunea stângă cu informații -->
+      <div class="info-section">
+        <div class="logo-section">
+          <div class="logo-icon">
+            <svg
+              width="40"
+              height="40"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M12 2L2 7L12 12L22 7L12 2Z"
+                stroke="white"
+                stroke-width="2"
+                stroke-linejoin="round"
+              />
+              <path d="M2 17L12 22L22 17" stroke="white" stroke-width="2" stroke-linejoin="round" />
+              <path d="M2 12L12 17L22 12" stroke="white" stroke-width="2" stroke-linejoin="round" />
+            </svg>
+          </div>
+          <h1 class="main-title">AD.CREDIT 2026</h1>
+          <h2 class="subtitle">prin SVN CREDIT ROMANIA</h2>
+        </div>
+
+        <ul class="features-list">
+          <li>
+            <div class="feature-icon">
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M9 11L12 14L22 4"
+                  stroke="white"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+                <path
+                  d="M21 12V19C21 20.1046 20.1046 21 19 21H5C3.89543 21 3 20.1046 3 19V5C3 3.89543 3.89543 3 5 3H16"
+                  stroke="white"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </div>
+            Management complet al dosarelor de creditare
+          </li>
+          <li>
+            <div class="feature-icon">
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <rect
+                  x="3"
+                  y="4"
+                  width="18"
+                  height="18"
+                  rx="2"
+                  ry="2"
+                  stroke="white"
+                  stroke-width="2"
+                />
+                <line x1="16" y1="2" x2="16" y2="6" stroke="white" stroke-width="2" />
+                <line x1="8" y1="2" x2="8" y2="6" stroke="white" stroke-width="2" />
+                <line x1="3" y1="10" x2="21" y2="10" stroke="white" stroke-width="2" />
+              </svg>
+            </div>
+            Raportare în timp real și statistici avansate
+          </li>
+          <li>
+            <div class="feature-icon">
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M12 22S20 16 20 10C20 5.58172 16.4183 2 12 2C7.58172 2 4 5.58172 4 10C4 16 12 22 12 22Z"
+                  stroke="white"
+                  stroke-width="2"
+                />
+                <circle cx="12" cy="10" r="3" stroke="white" stroke-width="2" />
+              </svg>
+            </div>
+            Acces securizat pe baze de date
+          </li>
+          <li>
+            <div class="feature-icon">
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M17 21V19C17 17.8954 16.1046 17 15 17H9C7.89543 17 7 17.8954 7 19V21"
+                  stroke="white"
+                  stroke-width="2"
+                />
+                <circle cx="12" cy="7" r="4" stroke="white" stroke-width="2" />
+              </svg>
+            </div>
+            Interfață intuitivă și personalizabilă
+          </li>
+        </ul>
+      </div>
+
+      <!-- Secțiunea dreaptă cu formularul -->
+      <div class="form-section">
+        <div class="form-header">
+          <h2 class="form-title">Autentificare securizată</h2>
+          <p class="form-subtitle">Introduceți datele de acces pentru a continua</p>
+        </div>
+
+        <!-- Mesaje de eroare/succes -->
+        {% if error %}
+        <div class="error-message">{{ error }}</div>
+        {% endif %}
+
+        <div class="error-message" id="errorMessage" style="display: none">
+          <!-- Mesajele de eroare JavaScript vor fi afișate aici -->
+        </div>
+
+        <div class="info-message" id="infoMessage" style="display: none">
+          <!-- Mesajele informative vor fi afișate aici -->
+        </div>
+
+        <!-- Secțiunea 2FA / TOTP Setup Admin (ascunsă implicit) -->
+        <div id="twoFaSection" style="display:none;">
+
+          <!-- QR Code setup (prima dată) -->
+          <div id="totpSetupBlock" style="display:none;">
+            <div style="text-align:center;margin-bottom:1rem;">
+              <img id="totpQrImg" src="" alt="QR Code" style="width:180px;height:180px;border:4px solid #e2e8f0;border-radius:8px;">
+            </div>
+            <div style="font-size:0.78rem;color:#64748b;text-align:center;margin-bottom:0.5rem;">
+              Dacă nu puteți scana, introduceți manual cheia:
+            </div>
+            <div id="totpSecretDisplay"
+                 style="font-family:monospace;font-size:0.85rem;letter-spacing:0.15rem;
+                        background:#f1f5f9;border:1px solid #cbd5e1;border-radius:6px;
+                        padding:0.5rem;text-align:center;word-break:break-all;margin-bottom:1rem;">
+            </div>
+          </div>
+
+          <!-- Input cod -->
+          <div class="form-group">
+            <label class="form-label" for="twoFaCode" id="twoFaLabel">🔑 COD DIN APLICAȚIE:</label>
+            <input
+              type="text"
+              id="twoFaCode"
+              class="form-input"
+              placeholder="6 cifre"
+              maxlength="6"
+              autocomplete="one-time-code"
+              inputmode="numeric"
+            />
+            <div class="field-status" id="twoFaStatus"></div>
+          </div>
+
+          <button type="button" class="login-button" id="twoFaButton">
+            <span class="loading-spinner" id="twoFaSpinner"></span>
+            ✅ Verifică codul
+          </button>
+          <div style="margin-top:0.75rem;text-align:center;">
+            <a href="#" id="twoFaCancelLink" style="color:#94a3b8;font-size:0.85rem;text-decoration:none;">
+              ← Înapoi la login
+            </a>
+          </div>
+        </div>
+
+        <form id="loginForm" method="POST" autocomplete="off">
+          <!-- EMAIL -->
+          <div class="form-group">
+            <label class="form-label" for="email"> 📧 EMAIL: </label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              class="form-input"
+              placeholder="exemplu@svncredit.ro"
+              required
+              autocomplete="off"
+            />
+            <div class="field-status" id="emailStatus"></div>
+          </div>
+
+          <!-- BAZĂ DE DATE (inițial dezactivat) -->
+          <div class="form-group">
+            <label class="form-label" for="departmentContainer"> 🗄️ TIP SERVICIU: </label>
+            <div id="departmentContainer"></div>
+            <div class="field-status" id="departmentStatus"></div>
+          </div>
+
+          <!-- PAROLĂ -->
+          <div class="form-group">
+            <label class="form-label" for="password"> 🔐 PAROLĂ: </label>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              class="form-input"
+              placeholder="Introduceți parola"
+              required
+              autocomplete="new-password"
+            />
+            <div class="field-status" id="passwordStatus"></div>
+          </div>
+
+          <button type="submit" class="login-button" id="loginButton" disabled>
+            <span class="loading-spinner" id="loadingSpinner"></span>
+            🚀 Conectare
+          </button>
+        </form>
+
+        <div class="reset-password-link">
+          <a href="{{ url_for('auth.show_reset_password_page') }}">Ați uitat parola?</a>
+        </div>
+
+        <div class="info-box">
+          <div class="info-title">ℹ️ Informații importante:</div>
+          <ul class="info-list">
+            <li>Sesiunea expiră automat după 10 minute de inactivitate</li>
+            <li>Aplicația detectează automat restart-urile serverului</li>
+            <li>Din motive de siguranță, sesiunile nu sunt permanente</li>
+          </ul>
+          <div class="extra-info">
+            <strong>🚨 Probleme de acces?</strong><br />
+            <span>Contactați administratorul IT</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- JavaScript Files -->
+    <script type="module" src="{{ url_for('static', filename='js/login.js') }}"></script>
+    {% if vite_enabled %}
+    <!-- Vite HMR in development -->
+    <script type="module" src="http://localhost:5173/@vite/client"></script>
+    <script type="module" src="http://localhost:5173/src/main.js"></script>
+    {% endif %}
+  </body>
+</html>

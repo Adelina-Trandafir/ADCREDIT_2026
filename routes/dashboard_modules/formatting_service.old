@@ -1,0 +1,296 @@
+# ========== routes/dashboard_modules/formatting_service.py ==========
+"""
+🎨 FORMATTING SERVICE MODULE
+Formatare celule și reguli condiționale
+"""
+
+from modules.db import get_service_conn
+import time
+
+
+class FormattingService:
+
+    def __init__(self):
+        self.cache = {}
+
+    def get_service_conn_dict(self):
+        """Returnează conexiune cu cursor dictionary"""
+        import mysql.connector
+
+        connection = get_service_conn()
+        # Configurează cursorul să returneze dictionaries
+        cursor = connection.cursor(dictionary=True)
+        return connection, cursor
+
+    # def apply_conditional_formatting(
+    #     self, filtered_data, column_config, department, sel_tab
+    # ):
+    #     """Aplică formatarea condiționată pe datele procesate"""
+    #     start_time = time.time()
+
+    #     # Încarcă regulile de formatare
+    #     color_rules = self.load_conditional_formatting_rules(department, sel_tab)
+
+    #     # Procesează datele cu formatare
+    #     from .data_service import DataService
+
+    #     data_service = DataService()
+
+    #     processed_rows = data_service.process_data_rows(
+    #         filtered_data[0] if isinstance(filtered_data, tuple) else filtered_data,
+    #         column_config["allowed_columns"],
+    #         column_config["columns_order"],
+    #         color_rules,
+    #     )
+
+    #     processing_time = time.time() - start_time
+
+    #     return {
+    #         "processed_rows": processed_rows,
+    #         "processing_time": processing_time,
+    #         "rules_applied": len(color_rules),
+    #     }
+
+    def get_complete_column_formats(self, department, IdConsultant, sel_tab):
+        """Returnează formatarea completă a coloanelor cu reguli condiționale"""
+        admin_conn = get_service_conn()
+        cursor = admin_conn.cursor()
+
+        # Încarcă configurația completă a coloanelor
+        columns_query = f"""
+        SELECT 
+            CAST(cc.IdColoana AS VARCHAR(3)) as IdColoana,
+            ci.NumeColoana,
+            cc.Afisare,
+            cc.Pozitie,
+            cc.Marime,
+            cc.Aliniere,
+            cc.Formatare,
+            cc.Special
+        FROM 
+            {department}.Consultanti_Coloane cc
+            INNER JOIN {department}.Coloane_Implicite ci 
+                ON cc.IdColoana = ci.IdColoana
+        WHERE 
+            cc.IdConsultant = %s 
+            AND cc.SelTab = %s
+            AND cc.Ascuns = 0
+        ORDER BY 
+            cc.Pozitie ASC
+        """
+
+        cursor.execute(columns_query, (IdConsultant, sel_tab))
+        columns = cursor.fetchall()
+
+        # Încarcă regulile de formatare pentru toate coloanele
+        format_query = f"""
+        SELECT 
+            CAST(cf.IdColoana AS VARCHAR(3)) as IdColoana, 
+            CAST(cf.IdColoanaFC AS VARCHAR(3)) as IdColoanaFC, 
+            ci.NumeColoana as NumeColoanaFC,
+            cf.Semn, 
+            cf.ValoareJS, 
+            CONCAT('#',LPAD(HEX(COALESCE(cf.BackColor, 0xFFFFFF)), 6, '0')) AS BackColor,
+            CONCAT('#',LPAD(HEX(COALESCE(cf.ForeColor, 0x000000)), 6, '0')) AS ForeColor,
+            cf.FontBold, 
+            cf.FontUnderline, 
+            cf.FontItalic
+        FROM 
+            {department}.Coloane_FC cf 
+            LEFT JOIN {department}.Coloane_Implicite ci ON cf.IdColoanaFC = ci.IdColoana
+        WHERE 
+            cf.IdColoanaFC IS NOT NULL 
+            AND cf.ValoareJS IS NOT NULL 
+            AND cf.SelTab = %s
+            AND cf.Activ = 1
+        ORDER BY 
+            cf.IdColoana, cf.IdColoanaFC, CAST(cf.ValoareJS AS SIGNED)
+        """
+
+        cursor.execute(format_query, (sel_tab,))
+        format_rules = cursor.fetchall()
+
+        cursor.close()
+        admin_conn.close()
+
+        # Construiește rezultatul final
+        formats = {}
+
+        # Adaugă informațiile de bază pentru fiecare coloană
+        for col in columns:
+            id_coloana = col[0]
+            formats[id_coloana] = {
+                "id": id_coloana,
+                "field": col[1],  # NumeColoana
+                "header": col[2] or col[1],  # Afisare sau NumeColoana
+                "width": col[4] or 100,
+                "align": ["left", "center", "right"][col[5] if col[5] < 3 else 0],
+                "format": col[6],
+                "special": col[7],
+                "colorRules": [],
+            }
+
+        # Adaugă regulile de formatare
+        for rule in format_rules:
+            id_coloana = rule[0]
+            if id_coloana in formats:
+                formats[id_coloana]["colorRules"].append(
+                    {
+                        "checkField": rule[2],  # NumeColoanaFC (pentru JS)
+                        "checkFieldId": rule[1],  # IdColoanaFC (pentru backend)
+                        "operator": rule[3],  # Semn
+                        "value": rule[4],  # ValoareJS
+                        "backColor": rule[5],  # BackColor
+                        "foreColor": rule[6],  # ForeColor
+                        "fontBold": bool(rule[7]),
+                        "fontUnderline": bool(rule[8]),
+                        "fontItalic": bool(rule[9]),
+                    }
+                )
+
+        return formats
+
+    def clear_cache(self):
+        """Șterge cache-ul de formatare"""
+        self.cache.clear()
+
+    def apply_cell_formatting(self, value, format_type):
+        """Aplică formatarea pe o singură celulă"""
+        if value is None:
+            return ""
+
+        if format_type == "Long Time":
+            from datetime import datetime
+
+            if isinstance(value, datetime):
+                return value.strftime("%d.%m.%Y %H:%M:%S")
+            else:
+                return str(value)
+        elif format_type == "Short Date":
+            from datetime import datetime
+
+            if isinstance(value, datetime):
+                return value.strftime("%d/%m/%Y")
+            else:
+                return str(value)
+        elif format_type == "Percent":
+            if isinstance(value, (int, float)):
+                return f"{value * 100:.2f}%"
+            else:
+                return str(value)
+        elif format_type == "Standard":
+            if isinstance(value, (int, float)):
+                return f"{int(value):,}".replace(",", ".")
+            else:
+                return str(value)
+        elif format_type == "@@@@ @@@ @@@":
+            str_value = str(value)
+            if len(str_value) == 10 and str_value.startswith("0"):
+                return f"{str_value[:4]} {str_value[4:7]} {str_value[7:]}"
+            else:
+                return str_value
+        else:
+            return str(value)
+
+    def check_formatting_condition(self, value, operator, compare_value):
+        """Verifică condiția pentru formatare condiționată"""
+        try:
+            # Determină tipul și convertește
+            try:
+                # Încearcă conversie numerică
+                val = float(value) if value is not None else 0
+                comp_val = float(compare_value)
+                is_numeric = True
+            except (ValueError, TypeError):
+                # Folosește ca string
+                val = str(value).strip() if value is not None else ""
+                comp_val = str(compare_value).strip()
+                is_numeric = False
+
+            # Aplică operatorul
+            if operator == "=":
+                return val == comp_val
+            elif operator == "!=":
+                return val != comp_val
+            elif operator in [">", "<", ">=", "<="]:
+                # Comparații numerice doar pentru numere
+                if not is_numeric:
+                    return False
+                if operator == ">":
+                    if isinstance(val, (int, float)) and isinstance(
+                        comp_val, (int, float)
+                    ):
+                        return val > comp_val
+                    else:
+                        return False
+                elif operator == "<":
+                    if isinstance(val, (int, float)) and isinstance(
+                        comp_val, (int, float)
+                    ):
+                        return val < comp_val
+                    else:
+                        return False
+                elif operator == ">=":
+                    if isinstance(val, (int, float)) and isinstance(
+                        comp_val, (int, float)
+                    ):
+                        return val >= comp_val
+                    else:
+                        return False
+                elif operator == "<=":
+                    if isinstance(val, (int, float)) and isinstance(
+                        comp_val, (int, float)
+                    ):
+                        return val <= comp_val
+                    else:
+                        return False
+            elif operator == "IN":
+                # Pentru IN, compare_value poate fi listă separată prin virgulă
+                values_list = [v.strip() for v in str(compare_value).split(",")]
+                return str(val) in values_list
+            elif operator == "LIKE":
+                # Simplu pattern matching
+                pattern = str(comp_val).replace("%", ".*")
+                import re
+
+                return re.match(pattern, str(val), re.IGNORECASE) is not None
+            else:
+                return False
+
+        except Exception as e:
+            print(f"⚠️ Eroare în verificare condiție formatare: {e}")
+            return False
+
+    def get_formatting_performance_stats(self):
+        """Returnează statistici despre performanța formatării"""
+        return {
+            "cache_size": len(self.cache),
+            "cached_departments": list(self.cache.keys()),
+            "memory_usage_estimate": f"{len(str(self.cache)) / 1024:.2f} KB",
+        }
+
+    # def preload_formatting_rules(self, department_list, sel_tab_list):
+    #     """Preîncarcă regulile de formatare pentru mai multe departmente"""
+    #     preloaded = []
+
+    #     for department in department_list:
+    #         for sel_tab in sel_tab_list:
+    #             try:
+    #                 rules = self.load_conditional_formatting_rules(department, sel_tab)
+    #                 preloaded.append(
+    #                     {
+    #                         "department": department,
+    #                         "sel_tab": sel_tab,
+    #                         "rules_count": len(rules),
+    #                     }
+    #                 )
+    #             except Exception as e:
+    #                 preloaded.append(
+    #                     {
+    #                         "department": department,
+    #                         "sel_tab": sel_tab,
+    #                         "error": str(e),
+    #                     }
+    #                 )
+
+    #     return preloaded

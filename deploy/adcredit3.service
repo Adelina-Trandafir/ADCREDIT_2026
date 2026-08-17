@@ -1,0 +1,44 @@
+[Unit]
+Description=ADCREDIT3 - Flask CRM
+After=network.target redis-server.service
+Requires=redis-server.service
+
+[Service]
+Type=notify
+
+User=root
+Group=root
+WorkingDirectory=/root/ADCREDIT3
+
+# Incarca .env
+EnvironmentFile=/root/ADCREDIT3/.env
+
+# Gunicorn cu debug logging activ
+ExecStart=/root/ADCREDIT3/.venv/bin/gunicorn \
+    --workers 3 \
+    --worker-class sync \
+    --bind 127.0.0.1:5001 \
+    --log-level debug \
+    --access-logfile /var/log/adcredit3/access.log \
+    --error-logfile /var/log/adcredit3/error.log \
+    --capture-output \
+    --timeout 60 \
+    app:app
+
+ExecReload=/bin/kill -s HUP $MAINPID
+
+# Restart automat daca pica
+Restart=on-failure
+RestartSec=5
+
+# Securitate
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ReadWritePaths=/root/ADCREDIT3 /var/log/adcredit3
+
+# Limiteaza resursele
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target

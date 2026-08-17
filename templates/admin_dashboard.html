@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎛️ Admin Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/variables.css') }}?v={{ cache_buster }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin_dashboard.css') }}?v={{ cache_buster }}">
+</head>
+<body>
+    <!-- Header -->
+    <header class="admin-header">
+        <div class="header-content">
+            <div class="header-left">
+                <h1 class="dashboard-title">
+                    <span class="title-icon">🎛️</span>
+                    Admin Dashboard
+                </h1>
+                <span class="admin-welcome">Bun venit, <strong id="adminName">Administrator</strong></span>
+            </div>
+            <div class="header-right">
+                <button class="header-btn" onclick="refreshDashboard()" title="Refresh">
+                    <span id="refreshIcon">🔄</span>
+                </button>
+                <button class="header-btn" onclick="toggleTheme()" title="Toggle Dark Mode">
+                    <span id="themeIcon">🌙</span>
+                </button>
+                <a href="/admin/logout" class="logout-btn">
+                    <span>🚪</span> Logout
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="dashboard-main">
+        <!-- Stats Cards -->
+        <section class="stats-grid">
+            <div class="stat-card redis-card">
+                <div class="stat-icon">📊</div>
+                <div class="stat-content">
+                    <h3>Redis Status</h3>
+                    <div class="stat-value" id="redisStatus">Încărcare...</div>
+                    <div class="stat-detail" id="redisDetail">Verificare conexiune</div>
+                </div>
+            </div>
+
+            <div class="stat-card users-card">
+                <div class="stat-icon">👥</div>
+                <div class="stat-content">
+                    <h3>Utilizatori Activi</h3>
+                    <div class="stat-value" id="activeUsers">-</div>
+                    <div class="stat-detail" id="usersDetail">din total</div>
+                </div>
+            </div>
+
+            <div class="stat-card blocked-card">
+                <div class="stat-icon">🚫</div>
+                <div class="stat-content">
+                    <h3>Conturi Blocate</h3>
+                    <div class="stat-value" id="blockedCount">-</div>
+                    <div class="stat-detail" id="blockedDetail">verificare...</div>
+                </div>
+            </div>
+
+            <div class="stat-card admin-card">
+                <div class="stat-icon">🛡️</div>
+                <div class="stat-content">
+                    <h3>Sesiune Admin</h3>
+                    <div class="stat-value" id="sessionDuration">-</div>
+                    <div class="stat-detail" id="sessionDetail">minute active</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Quick Actions -->
+        <section class="quick-actions">
+            <h2 class="section-title">
+                <span class="section-icon">⚡</span>
+                Acțiuni Rapide
+            </h2>
+            <div class="actions-grid">
+                <button class="action-btn unlock-btn" onclick="openUnlockPage()">
+                    <span class="action-icon">🔓</span>
+                    <span class="action-text">Deblocare Conturi</span>
+                </button>
+                
+                <button class="action-btn stats-btn" onclick="window.location.href='/admin/statistici'">
+                    <span class="action-icon">📈</span>
+                    <span class="action-text">Statistici Detaliate</span>
+                </button>
+                
+                <button class="action-btn logs-btn" onclick="showSystemLogs()">
+                    <span class="action-icon">📋</span>
+                    <span class="action-text">Jurnale Sistem</span>
+                </button>
+                
+                <button class="action-btn emergency-btn" onclick="emergencyUnlockAll()">
+                    <span class="action-icon">🚨</span>
+                    <span class="action-text">Deblocare Urgență</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- Blocked Accounts Preview -->
+        <section class="blocked-preview">
+            <h2 class="section-title">
+                <span class="section-icon">🚫</span>
+                Conturi Blocate Recent
+                <button class="title-btn" onclick="refreshBlockedAccounts()" title="Refresh">🔄</button>
+            </h2>
+            <div class="blocked-container">
+                <div id="blockedAccountsList" class="blocked-list">
+                    <div class="loading-state">
+                        <span class="loading-spinner">⏳</span>
+                        Încărcare conturi blocate...
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- System Info -->
+        <section class="system-info">
+            <h2 class="section-title">
+                <span class="section-icon">⚙️</span>
+                Informații Sistem
+            </h2>
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="info-label">Versiune Redis:</span>
+                    <span class="info-value" id="redisVersion">-</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Memorie Folosită:</span>
+                    <span class="info-value" id="memoryUsed">-</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Total Chei Redis:</span>
+                    <span class="info-value" id="totalKeys">-</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Ultima Actualizare:</span>
+                    <span class="info-value" id="lastUpdate">-</span>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modals -->
+    <div id="modalOverlay" class="modal-overlay" onclick="closeModal()">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h3 id="modalTitle">Modal Title</h3>
+                <button class="modal-close" onclick="closeModal()">✕</button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                Modal content goes here
+            </div>
+            <div class="modal-footer" id="modalFooter">
+                <!-- Footer buttons will be added by JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-content">
+            <div class="loading-spinner-big">⏳</div>
+            <div class="loading-text">Se procesează...</div>
+        </div>
+    </div>
+
+    <!-- Toast notifications -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <script src="{{ url_for('static', filename='js/admin/admin-dashboard.js') }}?v={{ cache_buster }}"></script>
+    <script src="{{ url_for('static', filename='js/admin/admin-session.js') }}?v={{ cache_buster }}"></script>
+</body>
+</html>

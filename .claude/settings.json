@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(head -10 grep -n \"positionDropdown\\\\|z-index\\\\|zIndex\" /root/ADCREDIT3/static/js/components/treeview/treeview.js)",
+      "Read(//root/ADCREDIT3/**)",
+      "Bash(find /root/ADCREDIT3 -name *.log)",
+      "Bash(grep -r \"\\\\.show\\(\\)\" static/js/components/calendar/*.js)",
+      "Bash(find /root/ADCREDIT3/templates -name admin_stats*)",
+      "Bash(find /root/ADCREDIT3/templates -name *.html)",
+      "Bash(source venv/bin/activate)",
+      "Bash(pip show:*)",
+      "Bash(pip list:*)",
+      "Bash(systemctl is-active:*)",
+      "Bash(/root/ADCREDIT3/venv/bin/pip list:*)",
+      "Bash(pip install:*)",
+      "Bash(source /root/ADCREDIT3/.venv/bin/activate)",
+      "Bash(find /root/ADCREDIT3 -maxdepth 1 -name *.json -o -name *.js -o -name *.ts)",
+      "Bash(find /root/ADCREDIT3 -maxdepth 3 \\\\\\(-name package.json -o -name package-lock.json -o -name vite.config.* \\\\\\))",
+      "Read(//usr/bin/**)",
+      "Bash(snap list:*)",
+      "Read(//opt/**)",
+      "Read(//root/.local/**)"
+    ]
+  }
+}
