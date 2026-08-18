@@ -19,7 +19,7 @@ DB_SERVICE_PASSWORD = os.getenv("DB_SERVICE_PASSWORD", "service_password")
 # Create a connection pool for the service account
 service_pool = pooling.MySQLConnectionPool(
     pool_name="service_pool",
-    pool_size=20,
+    pool_size=5,
     host=DB_HOST,
     port=DB_PORT,
     user=DB_SERVICE_USER,

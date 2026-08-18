@@ -28,6 +28,7 @@ import time
 import uuid
 from datetime import datetime, timedelta
 
+from routes.vba_api import vba_bp
 
 # ========== 🧹 SOLUȚIA PENTRU LOG-URI CURATE ==========
 # Importă logging pentru configurarea log-urilor
@@ -245,7 +246,8 @@ try:
     app.register_blueprint(admin_auth_bp, url_prefix="/admin")
     app.register_blueprint(admin_dashboard_bp, url_prefix="/admin")
     app.register_blueprint(settings_bp)
-
+    app.register_blueprint(vba_bp)
+    
 except ImportError as e:
     app_logger.error(f"❌ Eroare la încărcarea blueprints: {e}")
 
